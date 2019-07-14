@@ -19,7 +19,7 @@
 
 @interface YBPopupMenuCell : UITableViewCell
 @property (nonatomic, assign) BOOL isShowSeparator;
-@property (nonatomic, strong) UIColor * separatorColor;
+@property (nonatomic, strong) UIColor * customSeparatorColor;
 @end
 
 @implementation YBPopupMenuCell
@@ -29,7 +29,7 @@
     self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
     if (self) {
         _isShowSeparator = YES;
-        _separatorColor = [UIColor lightGrayColor];
+        _customSeparatorColor = [UIColor lightGrayColor];
         [self setNeedsDisplay];
     }
     return self;
@@ -41,17 +41,17 @@
     [self setNeedsDisplay];
 }
 
-- (void)setSeparatorColor:(UIColor *)separatorColor
+- (void)setCustomSeparatorColor:(UIColor *)customSeparatorColor
 {
-    _separatorColor = separatorColor;
+    _customSeparatorColor = customSeparatorColor;
     [self setNeedsDisplay];
 }
 
 - (void)drawRect:(CGRect)rect
-{
+{    
     if (!_isShowSeparator) return;
-    UIBezierPath *bezierPath = [UIBezierPath bezierPathWithRect:CGRectMake(0, rect.size.height - 0.5, rect.size.width, 0.5)];
-    [_separatorColor setFill];
+    UIBezierPath *bezierPath = [UIBezierPath bezierPathWithRect:CGRectMake(self.separatorInset.left, rect.size.height - 0.5, rect.size.width-(self.separatorInset.left+self.separatorInset.right), 0.5)];
+    [_customSeparatorColor setFill];
     [bezierPath fillWithBlendMode:kCGBlendModeNormal alpha:1];
     [bezierPath closePath];
 }
@@ -71,7 +71,6 @@ UITableViewDataSource
 @property (nonatomic, assign) CGFloat       itemWidth;
 @property (nonatomic) CGPoint               point;
 @property (nonatomic, assign) BOOL          isCornerChanged;
-@property (nonatomic, strong) UIColor     * separatorColor;
 @property (nonatomic, assign) BOOL          isChangeDirection;
 @end
 
@@ -193,7 +192,7 @@ UITableViewDataSource
     }else {
         cell.textLabel.text = nil;
     }
-    cell.separatorColor = _separatorColor;
+    cell.customSeparatorColor = _separatorColor;
     if (_images.count >= indexPath.row + 1) {
         if ([_images[indexPath.row] isKindOfClass:[NSString class]]) {
             cell.imageView.image = [UIImage imageNamed:_images[indexPath.row]];
@@ -260,10 +259,12 @@ UITableViewDataSource
 {
     [YBMainWindow addSubview:_menuBackView];
     [YBMainWindow addSubview:self];
-    if ([[self getLastVisibleCell] isKindOfClass:[YBPopupMenuCell class]]) {
-        YBPopupMenuCell *cell = [self getLastVisibleCell];
-        cell.isShowSeparator = NO;
-    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if ([[self getLastVisibleCell] isKindOfClass:[YBPopupMenuCell class]]) {
+            YBPopupMenuCell *cell = [self getLastVisibleCell];
+            cell.isShowSeparator = NO;
+        }
+    });
     if (self.delegate && [self.delegate respondsToSelector:@selector(ybPopupMenuBeganShow)]) {
         [self.delegate ybPopupMenuBeganShow];
     }
@@ -283,6 +284,7 @@ UITableViewDataSource
 {
     _cornerRadius = 5.0;
     _rectCorner = UIRectCornerAllCorners;
+    _shadowOpacity = 0.2;
     self.isShowShadow = YES;
     _dismissOnSelected = YES;
     _dismissOnTouchOutside = YES;
@@ -296,6 +298,7 @@ UITableViewDataSource
     _arrowWidth = 15.0;
     _arrowHeight = 10.0;
     _backColor = [UIColor whiteColor];
+    _separatorColor = [UIColor lightGrayColor];
     _type = YBPopupMenuTypeDefault;
     _arrowDirection = YBPopupMenuArrowDirectionTop;
     _priorityDirection = YBPopupMenuPriorityDirectionTop;
@@ -337,7 +340,7 @@ UITableViewDataSource
 - (void)setIsShowShadow:(BOOL)isShowShadow
 {
     _isShowShadow = isShowShadow;
-    self.layer.shadowOpacity = isShowShadow ? 0.5 : 0;
+    self.layer.shadowOpacity = isShowShadow ? self.shadowOpacity : 0;
     self.layer.shadowOffset = CGSizeMake(0, 0);
     self.layer.shadowRadius = isShowShadow ? 2.0 : 0;
 }
@@ -356,7 +359,6 @@ UITableViewDataSource
         {
             _textColor = [UIColor lightGrayColor];
             _backColor = [UIColor colorWithRed:0.25 green:0.27 blue:0.29 alpha:1];
-            _separatorColor = [UIColor lightGrayColor];
         }
             break;
             
@@ -364,11 +366,20 @@ UITableViewDataSource
         {
             _textColor = [UIColor blackColor];
             _backColor = [UIColor whiteColor];
-            _separatorColor = [UIColor lightGrayColor];
         }
             break;
     }
     [self updateUI];
+}
+
+- (void)setSeparatorColor:(UIColor *)separatorColor {
+    _separatorColor = separatorColor;
+    [self.tableView reloadData];
+}
+
+- (void)setSeparatorInset:(UIEdgeInsets)separatorInset {
+    self.tableView.separatorInset = separatorInset;
+    [self.tableView reloadData];
 }
 
 - (void)setFontSize:(CGFloat)fontSize

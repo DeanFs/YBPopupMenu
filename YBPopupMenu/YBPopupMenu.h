@@ -77,6 +77,16 @@ typedef NS_ENUM(NSInteger , YBPopupMenuPriorityDirection) {
 @property (nonatomic, strong) UITableView * tableView;
 
 /**
+ 分割线内边距，仅left, right生效
+ */
+@property (nonatomic, assign) UIEdgeInsets separatorInset;
+
+/**
+ 分割线颜色
+ */
+@property (nonatomic, strong) UIColor *separatorColor;
+
+/**
  圆角半径 Default is 5.0
  */
 @property (nonatomic, assign) CGFloat cornerRadius;
@@ -92,6 +102,11 @@ typedef NS_ENUM(NSInteger , YBPopupMenuPriorityDirection) {
  是否显示阴影 Default is YES
  */
 @property (nonatomic, assign , getter=isShadowShowing) BOOL isShowShadow;
+
+/**
+ 阴影透明度，默认 0.3
+ */
+@property (nonatomic, assign) CGFloat shadowOpacity;
 
 /**
  是否显示灰色覆盖层 Default is YES

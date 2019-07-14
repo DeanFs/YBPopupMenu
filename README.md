@@ -1,3 +1,9 @@
+# Fork 更新内容(from v1.1.2)：
+1. 解决分割线隐藏位置错误问题；
+2. 增加属性，设置分割线颜色separatorColor；
+3. 增加属性，设置分割线内边距separatorInset；
+4. 增加属性，设置阴影透明度shadowOpacity，默认0.2；
+
 # YBPopupMenu
  * 快速集成popupMenu
 
